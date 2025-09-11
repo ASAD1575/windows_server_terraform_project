@@ -1,7 +1,7 @@
 # This module creates cloned EC2 instances from the custom AMI.
 
 resource "aws_instance" "cloned_instance" {
-  count                       = var.count
+  count                       = var.cloned_instance_count
   ami                         = var.ami_id
   instance_type               = var.instance_type
   subnet_id                   = var.subnet_id

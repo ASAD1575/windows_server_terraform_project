@@ -1,5 +1,5 @@
 # The number of cloned instances to create.
-variable "count" {
+variable "cloned_instance_count" {
   description = "The number of cloned instances to create."
   type        = number
 }
