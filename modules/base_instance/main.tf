@@ -47,5 +47,5 @@ EOT
 data "aws_ec2_password" "admin_password" {
   instance_id = aws_instance.base_instance.id
   private_key = file("${path.module}/../key_pair/ec2_key.pem")
- 
+
 }

@@ -10,23 +10,23 @@ variable "azs" { type = list(string) }
 variable "windows_server_2022_ami_id" {
   description = "AMI ID for Windows Server 2022"
   type        = string
-  default     = "ami-0c02fb55956c7d316"  # Example for us-east-1, update as needed
+  default     = "ami-028dc1123403bd543" # Example for us-east-1, update as needed
 }
 
 variable "base_instance_type" {
   description = "Instance type for the base instance"
   type        = string
-  default     = "t3.medium"
+  default     = "t2.micro"
 }
 
 variable "cloned_instance_count" {
   description = "Number of cloned instances to create"
   type        = number
-  default     = 8
+  default     = 1
 }
 
 variable "cloned_instance_type" {
   description = "Instance type for the cloned instances"
   type        = string
-  default     = "t3.medium"
+  default     = "t2.micro"
 }
