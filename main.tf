@@ -27,6 +27,7 @@ module "base_instance" {
   security_group_id = module.security_group.app_sg_id
   key_pair_name     = module.key_pair.key_pair_name
   aws_region        = var.aws_region
+  instance_password = var.instance_password
 }
 
 module "ami_creation" {

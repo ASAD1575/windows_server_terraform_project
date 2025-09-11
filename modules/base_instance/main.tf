@@ -30,3 +30,38 @@ ${file("${path.module}/browser_installation_script.ps1")}
 </powershell>
 EOT
 }
+
+# This `null_resource` is a crucial step to ensure the AMI creation
+# doesn't happen until the script is fully executed.
+resource "null_resource" "wait_for_script" {
+  # This makes the null resource depend on the base instance.
+  depends_on = [aws_instance.base_instance]
+
+  # This provisioner waits until a file created by the script exists.
+  provisioner "remote-exec" {
+    inline = [
+      "Wait-For-File -Path 'C:\\completed_browsers_install.txt'",
+    ]
+    connection {
+      type        = "winrm"
+      user        = "Administrator"
+      password    = var.instance_password
+      host        = aws_instance.base_instance.public_ip
+    }
+  }
+}
+
+# --- Null resource to terminate the base instance after AMI creation ---
+resource "null_resource" "terminate_base_instance" {
+  # This resource will not be created until after the AMI is successfully built.
+  # Replace 'aws_ami_from_instance.ami_creation' with the name of your actual AMI resource.
+  depends_on = [
+    aws_ami_from_instance.ami_creation
+  ]
+
+  # The provisioner that executes a command on your local machine.
+  provisioner "local-exec" {
+    command = "aws ec2 terminate-instances --instance-ids ${aws_instance.base_instance.id}"
+    interpreter = [ "bash", "-c" ]
+  }
+}

@@ -7,3 +7,4 @@ windows_server_2022_ami_id = "ami-028dc1123403bd543" # Example for us-east-1, up
 base_instance_type         = "t2.micro"
 cloned_instance_count      = 1
 cloned_instance_type       = "t2.micro"
+instance_password          = "Pakistan@123"

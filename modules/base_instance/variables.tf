@@ -33,3 +33,8 @@ variable "aws_region" {
   description = "The AWS region."
   type        = string
 }
+
+variable "instance_password" {
+  description = "The instnce admin password"
+  type = string
+}
