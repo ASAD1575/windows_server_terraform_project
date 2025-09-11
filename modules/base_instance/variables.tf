@@ -4,16 +4,16 @@ variable "ami_id" {
   type        = string
 }
 
-# The instance type (e.g., "t2.micro").
+# The instance type (e.g., "t3.medium").
 variable "instance_type" {
   description = "The instance type."
   type        = string
 }
 
-# The subnet to launch the instance in.
-variable "subnet_id" {
-  description = "The subnet ID to launch the instance in."
-  type        = string
+# The public subnets to launch the instance in.
+variable "public_subnet_ids" {
+  description = "The list of public subnet IDs to launch the instance in."
+  type        = list(string)
 }
 
 # The security group to apply to the instance.
@@ -22,17 +22,10 @@ variable "security_group_id" {
   type        = string
 }
 
-# The key pair name for SSH access.
-variable "key_name" {
-  description = "The key pair name for SSH access."
+# The key pair name for RDP access.
+variable "key_pair_name" {
+  description = "The key pair name for RDP access."
   type        = string
-}
-
-# The administrative password for the instance.
-variable "admin_password" {
-  description = "The administrative password for the instance."
-  type        = string
-  sensitive   = true
 }
 
 # The AWS region.
