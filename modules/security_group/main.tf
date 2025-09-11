@@ -1,5 +1,5 @@
 resource "aws_security_group" "windows_instance_sg" {
-  name        = "windows-instance-sg"
+  name        = "windows_instance_sg"
   description = "Allow HTTP, HTTPS, RDP traffic"
   vpc_id      = var.vpc_id
 
@@ -32,5 +32,9 @@ resource "aws_security_group" "windows_instance_sg" {
     to_port     = 0
     protocol    = "-1"
     cidr_blocks = ["0.0.0.0/0"]
+  }
+  
+  tags = {
+    name = "windows_instance_sg"
   }
 }

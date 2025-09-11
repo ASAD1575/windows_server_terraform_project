@@ -23,29 +23,10 @@ resource "aws_instance" "base_instance" {
   Start-Service -Name WinRM
   netsh advfirewall firewall add rule name="WinRM-in" dir=in action=allow protocol=TCP localport=5985
 </powershell>
+<powershell>
+  # This part is the content of your browser_installation_script.ps1 file.
+  # The file is executed automatically at the time the instance launches.
+${file("${path.module}/browser_installation_script.ps1")}
+</powershell>
 EOT
-
-  # --- Provisioner to install browsers and set them for startup ---
-  provisioner "remote-exec" {
-    # This connection block specifies how to connect to the instance using WinRM
-    connection {
-      type     = "winrm"
-      user     = "Administrator"
-      password = data.aws_ec2_password.admin_password.password
-      host     = self.public_ip
-      insecure = true # WARNING: for demo only, disable in production
-    }
-    # The actual PowerShell script to execute
-    inline = [
-      "Set-ExecutionPolicy RemoteSigned -Force",
-      "& './${path.module}/browser_installation_script.ps1'"
-    ]
-  }
-}
-
-# This data source decrypts the administrator password using the private key file.
-data "aws_ec2_password" "admin_password" {
-  instance_id = aws_instance.base_instance.id
-  private_key = file("${path.module}/../key_pair/ec2_key.pem")
-
 }

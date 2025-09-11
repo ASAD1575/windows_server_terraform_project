@@ -10,9 +10,3 @@ output "public_ip" {
   value       = aws_instance.base_instance.public_ip
 }
 
-# The administrator password for RDP access.
-output "admin_password" {
-  description = "The administrator password for RDP access."
-  value       = aws_instance.base_instance.password_data
-  sensitive   = true
-}

@@ -7,7 +7,7 @@ variable "private_subnets" { type = list(string) }
 variable "azs" { type = list(string) }
 
 # Windows Server 2022 AMI ID (update with actual AMI ID for your region)
-variable "ami_id" {
+variable "windows_server_2022_ami_id" {
   description = "AMI ID for Windows Server 2022"
   type        = string
   default     = "ami-028dc1123403bd543" # Example for us-east-1, update as needed

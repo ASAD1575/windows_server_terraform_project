@@ -9,12 +9,6 @@ output "base_instance_public_ip" {
   value       = module.base_instance.public_ip
 }
 
-output "base_instance_admin_password" {
-  description = "The administrator password for RDP access to the base instance."
-  value       = module.base_instance.admin_password
-  sensitive   = true
-}
-
 # AMI outputs
 output "custom_ami_id" {
   description = "The ID of the custom AMI created from the base instance."
