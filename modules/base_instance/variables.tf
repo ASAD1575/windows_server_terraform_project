@@ -37,4 +37,5 @@ variable "aws_region" {
 variable "instance_password" {
   description = "The instnce admin password"
   type = string
+  sensitive = true
 }

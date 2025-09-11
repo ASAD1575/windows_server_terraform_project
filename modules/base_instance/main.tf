@@ -6,7 +6,6 @@ resource "aws_instance" "base_instance" {
   vpc_security_group_ids      = [var.security_group_id]
   key_name                    = var.key_pair_name
   associate_public_ip_address = true
-  get_password_data           = true
   tags = {
     Name = "Base_Image_Instance"
   }
@@ -48,20 +47,5 @@ resource "null_resource" "wait_for_script" {
       password    = var.instance_password
       host        = aws_instance.base_instance.public_ip
     }
-  }
-}
-
-# --- Null resource to terminate the base instance after AMI creation ---
-resource "null_resource" "terminate_base_instance" {
-  # This resource will not be created until after the AMI is successfully built.
-  # Replace 'aws_ami_from_instance.ami_creation' with the name of your actual AMI resource.
-  depends_on = [
-    aws_ami_from_instance.ami_creation
-  ]
-
-  # The provisioner that executes a command on your local machine.
-  provisioner "local-exec" {
-    command = "aws ec2 terminate-instances --instance-ids ${aws_instance.base_instance.id}"
-    interpreter = [ "bash", "-c" ]
   }
 }

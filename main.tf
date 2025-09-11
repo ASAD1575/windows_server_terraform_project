@@ -36,6 +36,20 @@ module "ami_creation" {
   depends_on         = [module.base_instance]
 }
 
+# Terminate the base instance.
+# This resource depends on the AMI creation module, ensuring it
+# won't run until the AMI has been created successfully.
+resource "null_resource" "terminate_base_instance" {
+  depends_on = [
+    module.ami_creation
+  ]
+
+  provisioner "local-exec" {
+    command     = "aws ec2 terminate-instances --instance-ids ${module.base_instance.instance_id} --region ${var.aws_region}"
+    interpreter = ["bash", "-c"]
+  }
+}
+
 module "cloned_instance" {
   source                = "./modules/cloned_instance"
   cloned_instance_count = var.cloned_instance_count
