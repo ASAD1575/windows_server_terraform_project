@@ -1,9 +1,3 @@
-# Enable WinRM and configure the firewall to allow inbound connections
-Set-Item WSMan:\localhost\Client\TrustedHosts -Value "*"
-Enable-PSRemoting -Force
-New-NetFirewallRule -Name "WinRM HTTP" -DisplayName "WinRM HTTP" -Enabled True -Protocol TCP -Action Allow -LocalPort 5985
-New-NetFirewallRule -Name "WinRM HTTPS" -DisplayName "WinRM HTTPS" -Enabled True -Protocol TCP -Action Allow -LocalPort 5986
-
 # Define a function for handling installation with error handling and cleanup
 function Install-Browser {
     param (
@@ -50,36 +44,23 @@ $edgeInstallerUrl = "https://msedge.sf.dl.delivery.mp.microsoft.com/filestreamin
 $edgeInstallerPath = "C:\Windows\Temp\edge_installer.exe"
 Install-Browser -installerUrl $edgeInstallerUrl -installerPath $edgeInstallerPath -installerArgs "/silent /install"
 
-# Add Browsers to Startup
-$startupFolder = "$env:APPDATA\Microsoft\Windows\Start Menu\Programs\Startup"
+# Add Browsers to Startup (Registry Method)
 try {
-    Write-Host "Adding browsers to startup."
+    Write-Host "Adding browsers to startup via registry."
 
-    # Ensure Chrome exists before adding to startup
-    if (Test-Path "C:\Program Files\Google\Chrome\Application\chrome.exe") {
-        Copy-Item "C:\Program Files\Google\Chrome\Application\chrome.exe" "$startupFolder\chrome.lnk" -Force
+    if (Test-Path "C:\Program Files (x86)\Google\Chrome\Application\chrome.exe") {
+        reg add "HKLM\Software\Microsoft\Windows\CurrentVersion\Run" /v Chrome /t REG_SZ /d "`"C:\Program Files (x86)\Google\Chrome\Application\chrome.exe`"" /f
         Write-Host "Chrome added to startup."
     }
-    else {
-        Write-Host "Chrome was not found. Skipping..."
-    }
 
-    # Ensure Firefox exists before adding to startup
     if (Test-Path "C:\Program Files\Mozilla Firefox\firefox.exe") {
-        Copy-Item "C:\Program Files\Mozilla Firefox\firefox.exe" "$startupFolder\firefox.lnk" -Force
+        reg add "HKLM\Software\Microsoft\Windows\CurrentVersion\Run" /v Firefox /t REG_SZ /d "`"C:\Program Files\Mozilla Firefox\firefox.exe`"" /f
         Write-Host "Firefox added to startup."
     }
-    else {
-        Write-Host "Firefox was not found. Skipping..."
-    }
 
-    # Ensure Edge exists before adding to startup
     if (Test-Path "C:\Program Files (x86)\Microsoft\Edge\Application\msedge.exe") {
-        Copy-Item "C:\Program Files (x86)\Microsoft\Edge\Application\msedge.exe" "$startupFolder\edge.lnk" -Force
+        reg add "HKLM\Software\Microsoft\Windows\CurrentVersion\Run" /v Edge /t REG_SZ /d "`"C:\Program Files (x86)\Microsoft\Edge\Application\msedge.exe`"" /f
         Write-Host "Edge added to startup."
-    }
-    else {
-        Write-Host "Edge was not found. Skipping..."
     }
 
     Write-Host "Browsers added to startup successfully."

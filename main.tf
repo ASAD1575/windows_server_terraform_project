@@ -2,6 +2,22 @@ provider "aws" {
   region = var.aws_region
 }
 
+# S3 Module for bucket and script upload
+module "s3" {
+  source                  = "./modules/S3"
+  region                  = var.aws_region
+  bucket_name             = var.s3_bucket_name
+  aws_dynamodb_table_name = var.dynamodb_table_name
+}
+
+# Upload the Windows setup script to S3
+resource "aws_s3_object" "windows_setup_script" {
+  bucket = module.s3.bucket_id
+  key    = "windows_setup.ps1"
+  source = "userdata/windows_setup.ps1"
+  etag   = filemd5("userdata/windows_setup.ps1")
+}
+
 # VPC Module
 module "vpc" {
   source          = "./modules/vpc"
@@ -29,36 +45,21 @@ module "key_pair" {
 
 # Base Instance Definition
 module "base_instance" {
-  source            = "./modules/base_instance"
-  ami_id            = var.windows_server_2022_ami_id
-  instance_type     = var.base_instance_type
-  public_subnet_ids = module.vpc.public_subnet_ids
-  security_group_id = module.security_group.app_sg_id
-  key_pair_name     = module.key_pair.key_pair_name
-  aws_region        = var.aws_region
-  iam_instance_profile = module.IAM_role.instance_profile_name  # Attach IAM instance profile
+  source               = "./modules/base_instance"
+  ami_id               = var.windows_server_2022_ami_id
+  instance_type        = var.base_instance_type
+  public_subnet_ids    = module.vpc.public_subnet_ids
+  security_group_id    = module.security_group.app_sg_id
+  key_pair_name        = module.key_pair.key_pair_name
+  aws_region           = var.aws_region
+  iam_instance_profile = module.IAM_role.instance_profile_name # Attach IAM instance profile
+  s3_bucket_id         = module.s3.bucket_id
 }
 
-# Null Resource to Wait for User Data Completion
-resource "null_resource" "wait_userdata" {
-  provisioner "remote-exec" {
-    inline = [
-      "while (!(Test-Path 'C:\\Windows\\Temp\\install_complete.flag')) {",
-      "  Write-Host 'Waiting for user data script to complete...'",
-      "  Start-Sleep -Seconds 10",
-      "} ",
-      "Write-Host 'User data script completed successfully.'"
-    ]
-
-    connection {
-      type        = "winrm"
-      host        = module.base_instance.public_ip
-      user        = "Administrator"
-      password    = module.base_instance.password_data  # Reference the password output from the base_instance module
-      https       = true
-      insecure    = true
-      port        = 5986
-    }
+# Null Resource to Wait for Base Instance to be Ready and Configurations to be Installed
+resource "null_resource" "wait_base_instance_ready" {
+  provisioner "local-exec" {
+    command = "./wait_for_flag.sh ${module.base_instance.instance_id}"
   }
 
   depends_on = [module.base_instance]
@@ -68,7 +69,7 @@ resource "null_resource" "wait_userdata" {
 module "ami_creation" {
   source             = "./modules/ami_creation"
   source_instance_id = module.base_instance.instance_id
-  depends_on         = [null_resource.wait_userdata]
+  depends_on         = [null_resource.wait_base_instance_ready]
 }
 
 # Cloned Instances
@@ -80,6 +81,6 @@ module "cloned_instance" {
   subnet_id             = element(module.vpc.public_subnet_ids, 0)
   security_group_id     = module.security_group.app_sg_id
   key_name              = module.key_pair.key_pair_name
-  iam_instance_profile  = module.IAM_role.instance_profile_name  # Attach IAM instance profile
+  iam_instance_profile  = module.IAM_role.instance_profile_name # Attach IAM instance profile
   depends_on            = [module.ami_creation]
 }

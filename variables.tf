@@ -30,3 +30,15 @@ variable "cloned_instance_type" {
   type        = string
   default     = "t2.micro"
 }
+
+variable "s3_bucket_name" {
+  description = "Name of the S3 bucket for storing scripts and state"
+  type        = string
+  default     = "windows-server-tfstate-bucket"
+}
+
+variable "dynamodb_table_name" {
+  description = "Name of the DynamoDB table for state locking"
+  type        = string
+  default     = "windows-server-tfstate-lock"
+}

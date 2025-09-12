@@ -39,3 +39,9 @@ variable "iam_instance_profile" {
   description = "Define iam role"
   type = string
 }
+
+# The S3 bucket ID for fetching the script
+variable "s3_bucket_id" {
+  description = "The ID of the S3 bucket containing the setup script"
+  type        = string
+}

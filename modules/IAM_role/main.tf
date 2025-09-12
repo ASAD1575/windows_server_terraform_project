@@ -19,7 +19,7 @@ resource "aws_iam_role" "ec2_role" {
 # Attach necessary policies to the IAM role
 resource "aws_iam_role_policy_attachment" "ec2_role_policy_ssm" {
   role       = aws_iam_role.ec2_role.name
-  policy_arn = "arn:aws:iam::aws:policy/service-role/AmazonEC2RoleforSSM"
+  policy_arn = "arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore"
 }
 
 resource "aws_iam_role_policy_attachment" "ec2_role_policy_s3" {
