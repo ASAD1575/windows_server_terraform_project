@@ -2,6 +2,7 @@ provider "aws" {
   region = var.aws_region
 }
 
+# VPC Module
 module "vpc" {
   source          = "./modules/vpc"
   vpc_cidr_block  = var.vpc_cidr_block
@@ -10,15 +11,23 @@ module "vpc" {
   azs             = var.azs
 }
 
+# Security Group Module
 module "security_group" {
   source = "./modules/security_group"
   vpc_id = module.vpc.vpc_id
 }
 
+# IAM Role Module (for EC2 instances)
+module "IAM_role" {
+  source = "./modules/IAM_role"
+}
+
+# Key Pair Module
 module "key_pair" {
   source = "./modules/key_pair"
 }
 
+# Base Instance Definition
 module "base_instance" {
   source            = "./modules/base_instance"
   ami_id            = var.windows_server_2022_ami_id
@@ -27,29 +36,42 @@ module "base_instance" {
   security_group_id = module.security_group.app_sg_id
   key_pair_name     = module.key_pair.key_pair_name
   aws_region        = var.aws_region
-  instance_password = var.instance_password
+  iam_instance_profile = module.IAM_role.instance_profile_name  # Attach IAM instance profile
 }
 
+# Null Resource to Wait for User Data Completion
+resource "null_resource" "wait_userdata" {
+  provisioner "remote-exec" {
+    inline = [
+      "while (!(Test-Path 'C:\\Windows\\Temp\\install_complete.flag')) {",
+      "  Write-Host 'Waiting for user data script to complete...'",
+      "  Start-Sleep -Seconds 10",
+      "} ",
+      "Write-Host 'User data script completed successfully.'"
+    ]
+
+    connection {
+      type        = "winrm"
+      host        = module.base_instance.public_ip
+      user        = "Administrator"
+      password    = module.base_instance.password_data  # Reference the password output from the base_instance module
+      https       = true
+      insecure    = true
+      port        = 5986
+    }
+  }
+
+  depends_on = [module.base_instance]
+}
+
+# AMI Creation from the Base Instance
 module "ami_creation" {
   source             = "./modules/ami_creation"
   source_instance_id = module.base_instance.instance_id
-  depends_on         = [module.base_instance]
+  depends_on         = [null_resource.wait_userdata]
 }
 
-# Terminate the base instance.
-# This resource depends on the AMI creation module, ensuring it
-# won't run until the AMI has been created successfully.
-resource "null_resource" "terminate_base_instance" {
-  depends_on = [
-    module.ami_creation
-  ]
-
-  provisioner "local-exec" {
-    command     = "aws ec2 terminate-instances --instance-ids ${module.base_instance.instance_id} --region ${var.aws_region}"
-    interpreter = ["bash", "-c"]
-  }
-}
-
+# Cloned Instances
 module "cloned_instance" {
   source                = "./modules/cloned_instance"
   cloned_instance_count = var.cloned_instance_count
@@ -58,5 +80,6 @@ module "cloned_instance" {
   subnet_id             = element(module.vpc.public_subnet_ids, 0)
   security_group_id     = module.security_group.app_sg_id
   key_name              = module.key_pair.key_pair_name
+  iam_instance_profile  = module.IAM_role.instance_profile_name  # Attach IAM instance profile
   depends_on            = [module.ami_creation]
 }

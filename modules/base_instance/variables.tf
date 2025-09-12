@@ -34,8 +34,8 @@ variable "aws_region" {
   type        = string
 }
 
-variable "instance_password" {
-  description = "The instnce admin password"
+# The IAM role for SSM connection
+variable "iam_instance_profile" {
+  description = "Define iam role"
   type = string
-  sensitive = true
 }

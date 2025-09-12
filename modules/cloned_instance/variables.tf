@@ -33,3 +33,9 @@ variable "key_name" {
   description = "The key pair name for SSH access."
   type        = string
 }
+
+# The IAM role for SSM connection 
+variable "iam_instance_profile" {
+  description = "Define iam role"
+  type = string
+}

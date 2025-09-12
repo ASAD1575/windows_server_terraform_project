@@ -10,3 +10,10 @@ output "public_ip" {
   value       = aws_instance.base_instance.public_ip
 }
 
+# The password data for the Windows instance.
+output "password_data" {
+  description = "The password data for the Windows instance."
+  value       = aws_instance.base_instance.password_data
+  sensitive   = true
+}
+
