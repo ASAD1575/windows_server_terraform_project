@@ -2,6 +2,17 @@ provider "aws" {
   region = var.aws_region
 }
 
+terraform {
+  backend "aws" {
+    bucket         = "my-terraform-state-bucket" # Replace with your S3 bucket name
+    key            = "terraform.tfstate"         # Replace with your desired state file path
+    region         = var.aws_region
+    dynamodb_table = var.dynamodb_table_name
+    encrypt        = true
+
+  }
+}
+
 # S3 Module for bucket and script upload
 module "s3" {
   source                  = "./modules/S3"
@@ -54,6 +65,7 @@ module "base_instance" {
   aws_region           = var.aws_region
   iam_instance_profile = module.IAM_role.instance_profile_name # Attach IAM instance profile
   s3_bucket_id         = module.s3.bucket_id
+  base_instance_name   = var.base_instance_name
 }
 
 
@@ -61,7 +73,7 @@ provider "time" {}
 
 resource "time_sleep" "wait_300_seconds" {
   create_duration = "300s"
-  depends_on = [ module.base_instance ]
+  depends_on      = [module.base_instance]
 }
 
 # Null Resource to Wait for Base Instance to be Ready and Configurations to be Installed
@@ -73,7 +85,7 @@ resource "null_resource" "wait_base_instance_ready" {
   depends_on = [
     module.base_instance,
     time_sleep.wait_300_seconds
-    ]
+  ]
 }
 
 # AMI Creation from the Base Instance
@@ -93,5 +105,16 @@ module "cloned_instance" {
   security_group_id     = module.security_group.app_sg_id
   key_name              = module.key_pair.key_pair_name
   iam_instance_profile  = module.IAM_role.instance_profile_name # Attach IAM instance profile
+  cloned_instance_name  = var.clone_instance_name
   depends_on            = [module.ami_creation]
+}
+
+
+module "cloudwatch" {
+  source                = "./modules/cloudwatch"
+  region                = var.aws_region
+  environment           = "Production"
+  log_retention_in_days = 7
+  base_instance_name    = var.base_instance_name
+  clone_instance_name   = var.clone_instance_name
 }

@@ -10,7 +10,7 @@ resource "aws_instance" "cloned_instance" {
   iam_instance_profile        = var.iam_instance_profile  # Attach IAM instance profile
   associate_public_ip_address = true
   tags = {
-    Name = "Cloned-Instance-${count.index + 1}"
+    Name = "${var.cloned_instance_name}-${count.index + 1}"
   }
 
   # Inline user_data script

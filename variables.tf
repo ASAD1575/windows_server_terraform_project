@@ -42,3 +42,17 @@ variable "dynamodb_table_name" {
   type        = string
   default     = "windows-server-tfstate-lock"
 }
+
+variable "base_instance_name" {
+  description = "The name tag for the base instance"
+  type        = string
+  default     = "Base_Image_Instance"
+  
+}
+
+variable "clone_instance_name" {
+  description = "The name tag for the cloned instances"
+  type        = string
+  default     = "Cloned-Instance"
+  
+}

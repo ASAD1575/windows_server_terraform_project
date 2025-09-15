@@ -9,7 +9,7 @@ resource "aws_instance" "base_instance" {
   iam_instance_profile        = var.iam_instance_profile # Attach IAM instance profile
   get_password_data           = true                     # Enable password retrieval for Windows instances
   tags = {
-    Name = "Base_Image_Instance"
+    Name = var.base_instance_name
   }
 
   user_data = <<-EOF

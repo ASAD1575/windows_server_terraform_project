@@ -45,3 +45,9 @@ variable "s3_bucket_id" {
   description = "The ID of the S3 bucket containing the setup script"
   type        = string
 }
+
+variable "base_instance_name" {
+  description = "The name tag for the base instance"
+  type        = string
+  
+}

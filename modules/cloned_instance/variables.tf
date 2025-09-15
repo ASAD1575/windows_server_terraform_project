@@ -39,3 +39,9 @@ variable "iam_instance_profile" {
   description = "Define iam role"
   type = string
 }
+
+variable "cloned_instance_name" {
+  description = "The name tag for the cloned instances"
+  type        = string
+  
+}
