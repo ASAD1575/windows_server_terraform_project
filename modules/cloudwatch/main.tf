@@ -23,3 +23,14 @@ resource "aws_cloudwatch_log_group" "ec2_clone_log_group" {
     Type        = "Clone"
   }
 }
+
+resource "aws_cloudwatch_log_stream" "base_instance_stream" {
+  name           = "${var.base_instance_name}-stream"
+  log_group_name = aws_cloudwatch_log_group.ec2_base_log_group.name
+}
+
+resource "aws_cloudwatch_log_stream" "clone_instance_stream" {
+  name           = "${var.clone_instance_name}-stream"
+  log_group_name = aws_cloudwatch_log_group.ec2_clone_log_group.name
+}
+
