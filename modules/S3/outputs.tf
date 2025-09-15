@@ -1,6 +1,6 @@
 output "bucket_id" {
   description = "The ID of the S3 bucket"
-  value       = aws_s3_bucket.windows_server_tfstate_bucket.id
+  value       = aws_s3_bucket.windows_server_bucket.id
 }
 
 output "script_object_key" {
