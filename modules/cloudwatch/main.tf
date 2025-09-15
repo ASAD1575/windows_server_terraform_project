@@ -1,8 +1,4 @@
-# modules/cloudwatch_logs/main.tf
-
-provider "aws" {
-  region = var.region
-}
+# modules/cloudwatch/main.tf
 
 # Log group for Base EC2 Instance
 resource "aws_cloudwatch_log_group" "ec2_base_log_group" {
