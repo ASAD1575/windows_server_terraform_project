@@ -14,38 +14,41 @@ resource "aws_instance" "base_instance" {
 
   user_data = <<-EOF
     <powershell>
-    # Enable WinRM and configure the firewall
-    Set-Item WSMan:\localhost\Client\TrustedHosts -Value "*"
-    Enable-PSRemoting -Force
-    New-NetFirewallRule -Name "WinRM HTTP" -DisplayName "WinRM HTTP" -Enabled True -Protocol TCP -Action Allow -LocalPort 5985
-    New-NetFirewallRule -Name "WinRM HTTPS" -DisplayName "WinRM HTTPS" -Enabled True -Protocol TCP -Action Allow -LocalPort 5986
+    # --- Step 1: Install SSM Agent ---
+    $agentUrl = "https://s3.amazonaws.com/amazon-ssm-us-east-1/latest/windows_amd64/AmazonSSMAgentSetup.exe"
+    $agentInstaller = "C:\\Windows\\Temp\\SSMAgent.exe"
+    Invoke-WebRequest $agentUrl -OutFile $agentInstaller -UseBasicParsing
+    Start-Process $agentInstaller -ArgumentList "/quiet" -Wait
 
-    # Install AWS CLI v2
+    # Start the SSM Agent service
+    Start-Service AmazonSSMAgent
+    Set-Service -Name AmazonSSMAgent -StartupType Automatic
+
+    # --- Step 2: Install AWS CLI ---
     $installerUrl = "https://awscli.amazonaws.com/AWSCLIV2.msi"
-    $installerPath = "C:\Windows\Temp\AWSCLIV2.msi"
+    $installerPath = "C:\\Windows\\Temp\\AWSCLIV2.msi"
     Invoke-WebRequest $installerUrl -OutFile $installerPath -UseBasicParsing
     Start-Process msiexec.exe -ArgumentList "/i `"$installerPath`" /qn /norestart" -Wait
 
     # Give installer time to finish
     Start-Sleep -Seconds 20
 
-    # Add AWS CLI path for this session
-    $env:Path += ";C:\Program Files\Amazon\AWSCLIV2\"
-
-    # Configure AWS CLI default region
+    # --- Step 3: Configure AWS CLI ---
+    $env:Path += ";C:\\Program Files\\Amazon\\AWSCLIV2\\"
     aws configure set region us-east-1
 
     # Download the setup script from S3
-    $bucket = "${var.s3_bucket_id}"
-    $key = "windows_setup.ps1"
-    Write-Host "Downloading script from s3://$bucket/$key"
-    aws s3 cp "s3://$bucket/$key" "C:\Windows\Temp\windows_setup.ps1"
-    Write-Host "Download complete"
+        $bucket = "${var.s3_bucket_id}"
+        $key = "windows_setup.ps1"
+        Write-Host "Downloading script from s3://$bucket/$key"
+        aws s3 cp "s3://$bucket/$key" "C:\Windows\Temp\windows_setup.ps1"
+        Write-Host "Download complete"
 
-    # Run the setup script
-    & "C:\Windows\Temp\windows_setup.ps1"
+    # --- Step 5: Run your custom setup script ---
+    & "C:\\Windows\\Temp\\windows_setup.ps1"
     </powershell>
   EOF
+
 }
 
 # Create SSM document to run the setup script (Optional, if you want to execute script via SSM)

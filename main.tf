@@ -56,13 +56,24 @@ module "base_instance" {
   s3_bucket_id         = module.s3.bucket_id
 }
 
+
+provider "time" {}
+
+resource "time_sleep" "wait_300_seconds" {
+  create_duration = "300s"
+  depends_on = [ module.base_instance ]
+}
+
 # Null Resource to Wait for Base Instance to be Ready and Configurations to be Installed
 resource "null_resource" "wait_base_instance_ready" {
   provisioner "local-exec" {
-    command = "sleep 300 && ./wait_for_flag.sh ${module.base_instance.instance_id}"
+    command = "./wait_for_flag.sh ${module.base_instance.instance_id} ${var.aws_region}"
   }
 
-  depends_on = [module.base_instance]
+  depends_on = [
+    module.base_instance,
+    time_sleep.wait_300_seconds
+    ]
 }
 
 # AMI Creation from the Base Instance

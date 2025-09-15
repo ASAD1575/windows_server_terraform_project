@@ -3,7 +3,7 @@ provider "aws" {
 
 }
 
-resource "aws_s3_bucket" "windows_server_tfstate_bucket" {
+resource "aws_s3_bucket" "windows_server_bucket" {
   bucket = var.bucket_name
 
   tags = {
@@ -14,13 +14,13 @@ resource "aws_s3_bucket" "windows_server_tfstate_bucket" {
 
 # Upload the PowerShell script to S3 bucket
 resource "aws_s3_object" "windows_setup_script" {
-  bucket = aws_s3_bucket.windows_server_tfstate_bucket.id
+  bucket = aws_s3_bucket.windows_server_bucket.id
   key    = "windows_setup.ps1"
   source = "${path.module}/../../userdata/windows_setup.ps1"
 }
 
-resource "aws_s3_bucket_public_access_block" "mutitier_app_tfstate_bucket_pab" {
-  bucket = aws_s3_bucket.windows_server_tfstate_bucket.id
+resource "aws_s3_bucket_public_access_block" "windows_server_bucket_pub" {
+  bucket = aws_s3_bucket.windows_server_bucket.id
 
   block_public_acls       = false
   block_public_policy     = false
