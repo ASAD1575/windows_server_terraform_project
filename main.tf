@@ -59,7 +59,7 @@ module "base_instance" {
 # Null Resource to Wait for Base Instance to be Ready and Configurations to be Installed
 resource "null_resource" "wait_base_instance_ready" {
   provisioner "local-exec" {
-    command = "./wait_for_flag.sh ${module.base_instance.instance_id}"
+    command = "sleep 300 && ./wait_for_flag.sh ${module.base_instance.instance_id}"
   }
 
   depends_on = [module.base_instance]
