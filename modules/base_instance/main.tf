@@ -9,7 +9,7 @@ resource "aws_instance" "base_instance" {
   iam_instance_profile        = var.iam_instance_profile # Attach IAM instance profile
   get_password_data           = true                     # Enable password retrieval for Windows instances
   tags = {
-    Name = var.base_instance_name
+    Name = "${var.base_instance_name}-${var.env}"
   }
 
   user_data = <<-EOF
@@ -37,6 +37,7 @@ resource "aws_instance" "base_instance" {
     $env:Path += ";C:\\Program Files\\Amazon\\AWSCLIV2\\"
     aws configure set region us-east-1
 
+    # --- Step 4: Download and execute the setup script from S3 ---
     # Download the setup script from S3
         $bucket = "${var.s3_bucket_id}"
         $key = "windows_setup.ps1"

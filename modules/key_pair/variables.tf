@@ -1,4 +1,3 @@
-variable "vpc_id" { type = string }
 variable "env" {
   description = "Environment (e.g., dev, prod)"
   type        = string

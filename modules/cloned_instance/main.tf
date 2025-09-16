@@ -10,17 +10,8 @@ resource "aws_instance" "cloned_instance" {
   iam_instance_profile        = var.iam_instance_profile  # Attach IAM instance profile
   associate_public_ip_address = true
   tags = {
-    Name = "${var.cloned_instance_name}-${count.index + 1}"
+    Name = "${var.cloned_instance_name}-${count.index + 1}-${var.env}"
   }
-
-  # Inline user_data script
-  # user_data = <<-EOF
-  #   <powershell>
-  #   # Set the Administrator password
-  #   $Password = ConvertTo-SecureString "Pakistan@12345678" -AsPlainText -Force
-  #   Set-LocalUser -Name "Administrator" -Password $Password
-  #   </powershell>
-  # EOF
 
   # This lifecycle rule ensures the new instance is created before the old one is destroyed.
   # Terraform will first provision the `final_instance` and then terminate the `provisioning_instance`.

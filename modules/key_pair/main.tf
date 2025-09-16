@@ -9,7 +9,7 @@ resource "aws_key_pair" "generated_key" {
   key_name   = "terraform_generated_key"
   public_key = tls_private_key.ssh_key.public_key_openssh
   tags = {
-    Name = "windows_instance_ssh_key"
+    Name = "windows_instance_ssh_key-${var.env}"
   }
 }
 

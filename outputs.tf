@@ -25,14 +25,3 @@ output "cloned_instance_public_ips" {
   description = "The public IPs of the cloned instances."
   value       = module.cloned_instance.public_ips
 }
-
-output "cloudwatch_base_log_group_name" {
-  description = "Name of the CloudWatch Log Group for Base Instance"
-  value       = module.cloudwatch.base_log_group_name
-  
-}
-
-output "cloudwatch_cloned_log_group_name" {
-  description = "Name of the CloudWatch Log Group for Cloned Instance"
-  value       = module.cloudwatch.cloned_log_group_name
-}

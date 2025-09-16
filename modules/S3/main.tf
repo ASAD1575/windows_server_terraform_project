@@ -7,7 +7,7 @@ resource "aws_s3_bucket" "windows_server_bucket" {
   bucket = var.bucket_name
 
   tags = {
-    Name = var.bucket_name
+    Name = "${var.bucket_name}-${var.env}"
   }
 
 }

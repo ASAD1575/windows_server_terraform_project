@@ -19,6 +19,7 @@ module "s3" {
   region                  = var.aws_region
   bucket_name             = var.s3_bucket_name
   aws_dynamodb_table_name = var.dynamodb_table_name
+  env                     = var.env
 }
 
 # Upload the Windows setup script to S3
@@ -36,12 +37,14 @@ module "vpc" {
   public_subnets  = var.public_subnets
   private_subnets = var.private_subnets
   azs             = var.azs
+  env             = var.env
 }
 
 # Security Group Module
 module "security_group" {
   source = "./modules/security_group"
   vpc_id = module.vpc.vpc_id
+  env    = var.env
 }
 
 # IAM Role Module (for EC2 instances)
@@ -52,6 +55,7 @@ module "IAM_role" {
 # Key Pair Module
 module "key_pair" {
   source = "./modules/key_pair"
+  env    = var.env
 }
 
 # Base Instance Definition
@@ -66,6 +70,7 @@ module "base_instance" {
   iam_instance_profile = module.IAM_role.instance_profile_name # Attach IAM instance profile
   s3_bucket_id         = module.s3.bucket_id
   base_instance_name   = var.base_instance_name
+  env                  = var.env
 }
 
 
@@ -93,6 +98,7 @@ module "ami_creation" {
   source             = "./modules/ami_creation"
   source_instance_id = module.base_instance.instance_id
   depends_on         = [null_resource.wait_base_instance_ready]
+  env                = var.env
 }
 
 # Cloned Instances
@@ -107,17 +113,5 @@ module "cloned_instance" {
   iam_instance_profile  = module.IAM_role.instance_profile_name # Attach IAM instance profile
   cloned_instance_name  = var.clone_instance_name
   depends_on            = [module.ami_creation]
-}
-
-
-module "cloudwatch" {
-  source                = "./modules/cloudwatch"
-  environment           = "Production"
-  log_retention_in_days = 7
-  base_instance_name    = var.base_instance_name
-  clone_instance_name   = var.clone_instance_name
-  depends_on = [
-    module.base_instance,
-    module.cloned_instance
-  ]
+  env                   = var.env
 }

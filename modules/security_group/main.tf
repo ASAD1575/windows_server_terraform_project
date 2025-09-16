@@ -51,6 +51,6 @@ resource "aws_security_group" "windows_instance_sg" {
   }
 
   tags = {
-    name = "windows_instance_sg"
+    name = "windows_instance_sg-${var.env}"
   }
 }

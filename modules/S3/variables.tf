@@ -15,3 +15,9 @@ variable "aws_dynamodb_table_name" {
   type        = string
   
 }
+
+variable "env" {
+  description = "Environment (e.g., dev, prod)"
+  type        = string
+  
+}

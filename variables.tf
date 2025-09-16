@@ -56,3 +56,10 @@ variable "clone_instance_name" {
   default     = "Cloned-Instance"
   
 }
+
+variable "env" {
+  description = "Environment (e.g., dev, prod)"
+  type        = string
+  default     = "dev"
+  
+}

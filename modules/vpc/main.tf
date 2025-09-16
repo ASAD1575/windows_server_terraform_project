@@ -3,14 +3,14 @@ resource "aws_vpc" "main" {
   enable_dns_support   = true
   enable_dns_hostnames = true
   tags = {
-    Name = "windows-instance-vpc"
+    Name = "windows-instance-vpc-${var.env}"
   }
 }
 
 resource "aws_internet_gateway" "igw" {
   vpc_id = aws_vpc.main.id
   tags = {
-    Name = "windows-instance-igw"
+    Name = "windows-instance-igw-${var.env}"
   }
 }
 
@@ -21,7 +21,7 @@ resource "aws_subnet" "public" {
   availability_zone       = var.azs[count.index]
   map_public_ip_on_launch = true
   tags = {
-    Name = "windows-instance-public-subnet-${count.index + 1}"
+    Name = "windows-instance-public-subnet-${count.index + 1}-${var.env}"
   }
 }
 
@@ -31,14 +31,14 @@ resource "aws_subnet" "private" {
   cidr_block        = var.private_subnets[count.index]
   availability_zone = var.azs[count.index]
   tags = {
-    Name = "windows-instance-private-subnet-${count.index + 1}"
+    Name = "windows-instance-private-subnet-${count.index + 1}-${var.env}"
   }
 }
 
 resource "aws_route_table" "public_rt" {
   vpc_id = aws_vpc.main.id
   tags = {
-    Name = "windows-instance-public-rt"
+    Name = "windows-instance-public-rt-${var.env}"
   }
 }
 
