@@ -3,7 +3,7 @@ provider "aws" {
 }
 
 terraform {
-  backend "aws" {
+  backend "s3" {
     bucket         = "my-terraform-state-bucket-1575" # Replace with your S3 bucket name
     key            = "terraform.tfstate"         # Replace with your desired state file path
     region         = var.aws_region
