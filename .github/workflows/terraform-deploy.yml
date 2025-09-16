@@ -37,19 +37,14 @@ jobs:
       uses: hashicorp/setup-terraform@v2
       with:
         terraform_version: ${{ env.TF_VERSION }}
-
-    - name: Terraform Format
-      id: fmt
-      run: terraform fmt -check
-      continue-on-error: true
+    
+    - name: Terraform Init
+      id: init
+      run: terraform init -migrate-state -no-color
 
     - name: Terraform Validate
       id: validate
       run: terraform validate -no-color
-
-    - name: Terraform Init
-      id: init
-      run: terraform init -no-color
 
     - name: Terraform Plan
       id: plan

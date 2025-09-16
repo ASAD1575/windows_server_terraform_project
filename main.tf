@@ -4,7 +4,7 @@ provider "aws" {
 
 terraform {
   backend "aws" {
-    bucket         = "my-terraform-state-bucket" # Replace with your S3 bucket name
+    bucket         = "my-terraform-state-bucket-1575" # Replace with your S3 bucket name
     key            = "terraform.tfstate"         # Replace with your desired state file path
     region         = var.aws_region
     dynamodb_table = var.dynamodb_table_name
