@@ -3,18 +3,20 @@ name: 'Terraform Deploy'
 on:
   push:
     branches:
-      - main   # Change if your default branch is different
-  pull_request:   # Run on PRs for plan + validation
-  workflow_dispatch:  # Allows manual triggering
+      - main
+  pull_request:
+  workflow_dispatch:
 
 env:
-  TF_VERSION: '1.6.0'  # Terraform version
-  AWS_REGION: ${{ secrets.AWS_REGION != '' && secrets.AWS_REGION || 'us-east-1' }}
+  TF_VERSION: '1.6.0'
+  AWS_REGION: ${{ secrets.AWS_REGION || 'us-east-1' }}
 
 jobs:
   terraform:
     name: 'Terraform'
     runs-on: ubuntu-latest
+    environment: production   # ✅ moved to job level, valid
+
     defaults:
       run:
         shell: bash
@@ -36,14 +38,6 @@ jobs:
       with:
         terraform_version: ${{ env.TF_VERSION }}
 
-    - name: Cache Terraform
-      uses: actions/cache@v4
-      with:
-        path: |
-          ~/.terraform.d/plugin-cache
-          .terraform
-        key: ${{ runner.os }}-terraform-${{ hashFiles('**/*.tf') }}
-
     - name: Terraform Format
       id: fmt
       run: terraform fmt -check
@@ -59,19 +53,14 @@ jobs:
 
     - name: Terraform Plan
       id: plan
-      run: terraform plan -no-color -out=tfplan | tee plan.txt
+      run: terraform plan -no-color -out=tfplan
+      continue-on-error: true
 
-    - name: Save plan output
-      id: plan-output
-      if: always()
-      run: |
-        echo "plan<<EOF" >> $GITHUB_OUTPUT
-        cat plan.txt >> $GITHUB_OUTPUT
-        echo "EOF" >> $GITHUB_OUTPUT
-
-    - name: Update Pull Request with Plan
-      if: github.event_name == 'pull_request'
+    - name: Update Pull Request
       uses: actions/github-script@v7
+      if: github.event_name == 'pull_request'
+      env:
+        PLAN: "terraform\n${{ steps.plan.outputs.stdout }}"
       with:
         github-token: ${{ secrets.GITHUB_TOKEN }}
         script: |
@@ -81,7 +70,7 @@ jobs:
           <details><summary>Show Plan</summary>
 
           \`\`\`\n
-          ${{ steps.plan-output.outputs.plan }}
+          ${process.env.PLAN}
           \`\`\`
 
           </details>
@@ -101,8 +90,6 @@ jobs:
 
     - name: Terraform Apply
       if: github.ref == 'refs/heads/main' && github.event_name == 'push'
-      # For extra safety: require approval via "environments" in GitHub
-      environment: production
       run: terraform apply -auto-approve -no-color tfplan
 
     - name: Wait for Instance Readiness (Optional)
@@ -114,5 +101,5 @@ jobs:
           chmod +x wait_for_flag.sh
           ./wait_for_flag.sh "$INSTANCE_ID" "$AWS_REGION"
         else
-          echo "No base_instance_id output found, skipping wait script."
+          echo "No base instance ID found in outputs, skipping wait script."
         fi
