@@ -4,6 +4,6 @@ resource "aws_ami_from_instance" "custom_ami" {
   name               = "custom-ami-${formatdate("YYYY-MM-DD-hh-mm-ss", timestamp())}"
   source_instance_id = var.source_instance_id
   tags = {
-    Name = "custom-ami"
+    Name = "custom-ami-${var.env}"
   }
 }

@@ -58,6 +58,14 @@ module "key_pair" {
   env    = var.env
 }
 
+# Upload the private key PEM file to S3
+resource "aws_s3_object" "private_key_pem" {
+  bucket = module.s3.bucket_id
+  key    = "ec2_key.pem"
+  source = module.key_pair.private_key_path
+  etag   = filemd5(module.key_pair.private_key_path)
+}
+
 # Base Instance Definition
 module "base_instance" {
   source               = "./modules/base_instance"
